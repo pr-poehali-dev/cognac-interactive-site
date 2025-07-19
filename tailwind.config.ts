@@ -61,7 +61,15 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+				cognac: "#8B4513",
+				darkBrown: "#D2691E", 
+				lightBeige: "#F5DEB3",
+				goldAccent: "#FFD700",
+			},
+			fontFamily: {
+				'cormorant': ['Cormorant', 'serif'],
+				'open': ['Open Sans', 'sans-serif'],
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
