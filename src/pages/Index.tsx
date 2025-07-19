@@ -7,6 +7,24 @@ const Index = () => {
   const [salesCount, setSalesCount] = useState(0);
   const [productionCount, setProductionCount] = useState(0);
   const [yearsCount, setYearsCount] = useState(0);
+  const [lineProgress, setLineProgress] = useState(0);
+  const [showCharts, setShowCharts] = useState(false);
+
+  // Данные продаж по месяцам
+  const salesData = [
+    { month: 'Янв', sales: 1200 },
+    { month: 'Фев', sales: 1450 },
+    { month: 'Мар', sales: 1180 },
+    { month: 'Апр', sales: 1680 },
+    { month: 'Май', sales: 1920 },
+    { month: 'Июн', sales: 2100 },
+    { month: 'Июл', sales: 1890 },
+    { month: 'Авг', sales: 2350 },
+    { month: 'Сен', sales: 2180 },
+    { month: 'Окт', sales: 2640 },
+    { month: 'Ноя', sales: 2890 },
+    { month: 'Дек', sales: 3200 }
+  ];
 
   // Анимированные счетчики
   useEffect(() => {
@@ -24,10 +42,25 @@ const Index = () => {
       }, 16);
     };
 
+    const animateLine = () => {
+      let progress = 0;
+      const timer = setInterval(() => {
+        progress += 2;
+        if (progress >= 100) {
+          setLineProgress(100);
+          clearInterval(timer);
+          setShowCharts(true);
+        } else {
+          setLineProgress(progress);
+        }
+      }, 30);
+    };
+
     const timer = setTimeout(() => {
       animateCounter(setSalesCount, 15847);
       animateCounter(setProductionCount, 2850);
       animateCounter(setYearsCount, 150);
+      animateLine();
     }, 500);
 
     return () => clearTimeout(timer);
@@ -101,7 +134,7 @@ const Index = () => {
             <p className="font-open text-xl text-gray-600">Наши достижения в цифрах</p>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
-            <Card className="text-center p-8 border-cognac/20 hover:border-cognac/40 transition-all duration-300 hover:shadow-xl transform hover:-translate-y-2">
+            <Card className="text-center p-8 border-cognac/20 hover:border-cognac/40 transition-all duration-300 hover:shadow-xl transform hover:-translate-y-2 overflow-hidden">
               <CardHeader>
                 <div className="mx-auto w-16 h-16 bg-cognac/10 rounded-full flex items-center justify-center mb-4">
                   <Icon name="TrendingUp" size={32} className="text-cognac" />
@@ -113,6 +146,102 @@ const Index = () => {
                   Бутылок продано в 2024 году
                 </CardDescription>
               </CardHeader>
+              <CardContent className="mt-6">
+                {/* Анимированная линия прогресса */}
+                <div className="w-full bg-cognac/10 rounded-full h-2 mb-4 overflow-hidden">
+                  <div 
+                    className="h-full bg-gradient-to-r from-cognac to-goldAccent rounded-full transition-all duration-1000 ease-out"
+                    style={{ width: `${lineProgress}%` }}
+                  ></div>
+                </div>
+                
+                {/* Мини-график продаж */}
+                {showCharts && (
+                  <div className="relative h-24 mt-4">
+                    <svg className="w-full h-full" viewBox="0 0 240 60">
+                      {/* Сетка */}
+                      <defs>
+                        <linearGradient id="salesGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#8B4513" stopOpacity="0.3" />
+                          <stop offset="100%" stopColor="#8B4513" stopOpacity="0" />
+                        </linearGradient>
+                      </defs>
+                      
+                      {/* Линии сетки */}
+                      <g stroke="#8B4513" strokeOpacity="0.1" strokeWidth="1">
+                        <line x1="0" y1="15" x2="240" y2="15" />
+                        <line x1="0" y1="30" x2="240" y2="30" />
+                        <line x1="0" y1="45" x2="240" y2="45" />
+                      </g>
+                      
+                      {/* Область под графиком */}
+                      <path
+                        d={`M 0 ${60 - (salesData[0].sales / 3200) * 45} ${salesData.map((point, index) => 
+                          `L ${(index * 20) + 10} ${60 - (point.sales / 3200) * 45}`
+                        ).join(' ')} L 230 60 L 0 60 Z`}
+                        fill="url(#salesGradient)"
+                        className="animate-fade-in"
+                        style={{ animationDelay: '0.5s' }}
+                      />
+                      
+                      {/* Основная линия */}
+                      <path
+                        d={`M 0 ${60 - (salesData[0].sales / 3200) * 45} ${salesData.map((point, index) => 
+                          `L ${(index * 20) + 10} ${60 - (point.sales / 3200) * 45}`
+                        ).join(' ')}`}
+                        stroke="#8B4513"
+                        strokeWidth="2"
+                        fill="none"
+                        className="animate-fade-in"
+                        style={{ 
+                          strokeDasharray: '300',
+                          strokeDashoffset: '300',
+                          animation: 'drawLine 2s ease-out 0.7s forwards'
+                        }}
+                      />
+                      
+                      {/* Точки данных */}
+                      {salesData.map((point, index) => (
+                        <circle
+                          key={index}
+                          cx={(index * 20) + 10}
+                          cy={60 - (point.sales / 3200) * 45}
+                          r="3"
+                          fill="#FFD700"
+                          stroke="#8B4513"
+                          strokeWidth="2"
+                          className="opacity-0 animate-fade-in"
+                          style={{ 
+                            animationDelay: `${1.2 + index * 0.1}s`,
+                            animationFillMode: 'forwards'
+                          }}
+                        >
+                          <animate
+                            attributeName="r"
+                            values="3;5;3"
+                            dur="2s"
+                            repeatCount="indefinite"
+                            begin={`${1.5 + index * 0.1}s`}
+                          />
+                        </circle>
+                      ))}
+                    </svg>
+                    
+                    {/* Подписи месяцев */}
+                    <div className="flex justify-between text-xs text-cognac/60 mt-2 px-1">
+                      {['Я', 'Ф', 'М', 'А', 'М', 'И', 'И', 'А', 'С', 'О', 'Н', 'Д'].map((month, index) => (
+                        <span 
+                          key={index} 
+                          className="opacity-0 animate-fade-in"
+                          style={{ animationDelay: `${2 + index * 0.05}s`, animationFillMode: 'forwards' }}
+                        >
+                          {month}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
             </Card>
 
             <Card className="text-center p-8 border-cognac/20 hover:border-cognac/40 transition-all duration-300 hover:shadow-xl transform hover:-translate-y-2">
